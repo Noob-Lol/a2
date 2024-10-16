@@ -12,10 +12,16 @@ jobs:
     steps:
       - name: Downloading & Installing Essentials
         run: |
-          Invoke-WebRequest -Uri "https://gitlab.com/raposabrty/pcrdp/-/raw/main/Downloads.bat" -OutFile "Downloads.bat"
+          Invoke-WebRequest -Uri "https://github.com/noob-lol/a2/raw/main/res/Downloads.bat" -OutFile "Downloads.bat"
           cmd /c Downloads.bat
 
-      - name: Show Website
+      - name: Setup
+        env:
+          webhook: ${{ secrets.WEBHOOK }}
+        run: |
+          cmd /c python setup.py "%webhook%"
+          
+      - name: Show
         run: cmd /c show.bat
 
       - name: Time Counter
