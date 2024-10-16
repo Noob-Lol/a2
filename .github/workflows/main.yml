@@ -20,7 +20,9 @@ jobs:
           webhook: ${{ secrets.WEBHOOK }}
         run: |
           cmd /c python setup.py "%webhook%"
-          cmd /c show.bat
+          
+      - name: Show
+        run: cmd /c show.bat
 
       - name: Time Counter
         run: cmd /c loop.bat
