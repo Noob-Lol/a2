@@ -33,11 +33,10 @@ for x, y, duration in actions:
         time.sleep(10)  # Extra 10 seconds delay before taking the screenshot
         pag.screenshot().save(img_filename)
         Image.open(img_filename).crop((230, 120, 500, 160)).save(img_filename)
-        # text = pytesseract.image_to_string(img_filename)
-        # part1, part2 = text.rsplit(' ', 1)
+        text = pytesseract.image_to_string(img_filename)
+        part1, part2 = text.rsplit(' ', 1)
         try:
-            # requests.post(webhook_url, json={"content": f"Started at: {time.strftime('%H:%M')}\nID: {part1}\nPass: {part2}"})
-            requests.post(webhook_url, files={'file': open(img_filename, 'rb')})
+            requests.post(webhook_url, json={"content": f"Started at: {time.strftime('%H:%M')}\nID: {part1}\nPass: {part2}"})
             print("Connection info was sent via webhook.")
         except Exception as e:
             print(f"An error occurred: {e}")
