@@ -10,8 +10,6 @@ curl -sLo C:\Users\Public\Desktop\VMQuickConfig.exe "https://github.com/chieunha
 curl -sLo tesseract-setup.exe "https://github.com/UB-Mannheim/tesseract/releases/download/v5.4.0.20240606/tesseract-ocr-w64-setup-5.4.0.20240606.exe"
 start /wait tesseract-setup.exe /S
 del tesseract-setup.exe
-powershell -Command "[Environment]::SetEnvironmentVariable('Path', $env:Path + ';C:\Program Files\Tesseract-OCR', [EnvironmentVariableTarget]::Machine)"
-set PATH=%PATH%
 echo Tesseract was installed
 pip install requests pyautogui pytesseract --quiet
 C:\Users\Public\Desktop\Winrar.exe /S

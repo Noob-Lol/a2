@@ -1,6 +1,7 @@
 import sys, os, time, requests, pytesseract
 import pyautogui as pag
 from PIL import Image
+pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 webhook_url = sys.argv[1]
 # Define actions with coordinates and duration
 actions = [
@@ -27,7 +28,7 @@ for x, y, duration in actions:
         pag.click(x, y, duration=duration)  # Try activating the button again
     
     if (x, y) == (447, 286):  # Launch avica and upload screenshot
-        os.system('"C:\\Program Files x86\\Avica\\Avica.exe"')
+        os.system("C:/Program Files x86/Avica/Avica.exe")
         time.sleep(5)  # Give some time for the app to launch
         pag.click(249, 203, duration=4)  # Re-click on the Allow button coordinates
         time.sleep(10)  # Extra 10 seconds delay before taking the screenshot
