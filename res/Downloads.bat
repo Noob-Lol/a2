@@ -4,10 +4,13 @@ curl -sLo Avica_setup.exe "https://download.avica.link/downloader/Avica_setup.ex
 curl -sLo show.bat https://github.com/noob-lol/a2/raw/main/res/show.bat
 curl -sLo loop.bat https://gitlab.com/chamod12/loop-win10/-/raw/main/loop.bat
 curl -sLo C:\Users\Public\Desktop\Winrar.exe https://www.rarlab.com/rar/winrar-x64-701.exe
+echo this is done
 powershell -Command "Invoke-WebRequest 'https://github.com/chieunhatnang/VM-QuickConfig/releases/download/1.6.1/VMQuickConfig.exe' -OutFile 'C:\Users\Public\Desktop\VMQuickConfig.exe'"
-curl -sLo tesseract-setup.exe https://github.com/UB-Mannheim/tesseract/releases/download/v5.4.0.20240606/tesseract-ocr-w64-setup-5.4.0.20240606.exe
+echo downloading tesseract
+curl -sLo tesseract-setup.exe "https://github.com/UB-Mannheim/tesseract/releases/download/v5.4.0.20240606/tesseract-ocr-w64-setup-5.4.0.20240606.exe"
 if exist tesseract-setup.exe (
-    tesseract-setup.exe /SILENT
+    echo installing tesseract
+    tesseract-setup.exe /S
     setx /M PATH "%PATH%;C:\Program Files\Tesseract-OCR"
     echo Tesseract was installed and added to PATH.
 ) else (
