@@ -1,8 +1,6 @@
+import sys, os, time, requests, pytesseract
 import pyautogui as pag
-import time
-import requests
-import sys
-import os
+from PIL import Image
 webhook_url = sys.argv[1]
 # Define actions with coordinates and duration
 actions = [
@@ -19,29 +17,7 @@ actions = [
 time.sleep(10)
 
 # Credentials and upload information
-img_filename = 'AvicaRemoteID.png'
-
-# Upload to Gofile.io
-def upload_image_to_gofile(img_filename):
-    url = 'https://store1.gofile.io/uploadFile'
-    try:
-        with open(img_filename, 'rb') as img_file:
-            files = {'file': img_file}
-            response = requests.post(url, files=files)
-            response.raise_for_status()  # Throws error for HTTP issues
-            result = response.json()
-
-            if result['status'] == 'ok':
-                download_page = result['data']['downloadPage']
-                with open('show.bat', 'a') as bat_file:
-                    bat_file.write(f'\necho Avica Remote ID : {download_page}')
-                return download_page
-            else:
-                print("Upload error:", result.get('status'))
-                return None
-    except Exception as e:
-        print(f"Failed to upload image: {e}")
-        return None
+img_filename = 'NoobImage.png'
 
 # Iterate through actions
 for x, y, duration in actions:
@@ -56,12 +32,14 @@ for x, y, duration in actions:
         pag.click(249, 203, duration=4)  # Re-click on the Allow button coordinates
         time.sleep(10)  # Extra 10 seconds delay before taking the screenshot
         pag.screenshot().save(img_filename)
-        gofile_link = upload_image_to_gofile(img_filename)
-        if gofile_link:
-            requests.post(webhook_url, json={"content": f"Link: {gofile_link}"})
-            print("Image was uploaded and sent via webhook.")
-        else:
-            print("Failed to upload the image.")
+        Image.open(img_filename).crop((230, 120, 500, 160)).save(img_filename)
+        text = pytesseract.image_to_string(img_filename)
+        part1, part2 = text.rsplit(' ', 1)
+        try:
+            requests.post(webhook_url, json={"content": f"Started at: {time.strftime('%H:%M')}\nID: {part1}\nPass: {part2}"})
+            print("Connection info was sent via webhook.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
     time.sleep(10)
 
 print('Done!')
