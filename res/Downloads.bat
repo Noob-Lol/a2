@@ -1,9 +1,7 @@
 @echo off
 SETLOCAL
 echo Downloading...
-curl -sLo setup.py https://github.com/noob-lol/a2/raw/main/res/setup.py
 curl -sLo Avica_setup.exe "https://download.avica.link/downloader/Avica_setup.exe"
-curl -sLo show.bat https://github.com/noob-lol/a2/raw/main/res/show.bat
 curl -sLo loop.bat https://gitlab.com/chamod12/loop-win10/-/raw/main/loop.bat
 curl -sLo C:\Users\Public\Desktop\Winrar.exe https://www.rarlab.com/rar/winrar-x64-701.exe
 curl -sLo C:\Users\Public\Desktop\VMQuickConfig.exe "https://github.com/chieunhatnang/VM-QuickConfig/releases/download/1.6.1/VMQuickConfig.exe"

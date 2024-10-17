@@ -19,7 +19,7 @@ time.sleep(10)
 
 # Credentials and upload information
 img_filename = 'NoobImage.png'
-
+img2 = 'NoobImage2.png'
 # Iterate through actions
 for x, y, duration in actions:
     pag.click(x, y, duration=duration)
@@ -33,12 +33,16 @@ for x, y, duration in actions:
         pag.click(249, 203, duration=4)  # Re-click on the Allow button coordinates
         time.sleep(10)  # Extra 10 seconds delay before taking the screenshot
         pag.screenshot().save(img_filename)
-        Image.open(img_filename).crop((230, 120, 500, 160)).save(img_filename)
-        text = pytesseract.image_to_string(img_filename)
-        part1, part2 = text.rsplit(' ', 1)
+        Image.open(img_filename).crop((230, 120, 500, 160)).save(img2)
+        text = pytesseract.image_to_string(img2)
         try:
+            part1, part2 = text.rsplit(' ', 1)
             requests.post(webhook_url, json={"content": f"ID: {part1}\nPass: {part2}"})
             print("Connection info was sent via webhook.")
         except Exception as e:
+            try:
+                requests.post(webhook_url, files={"file": open(img_filename, "rb")},json={"content": f"got {e}\n{text}",})
+            except Exception as e:
+                print("fail x2", e)
             print(f"An error occurred: {e}")
     time.sleep(10)

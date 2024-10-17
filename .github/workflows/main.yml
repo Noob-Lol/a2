@@ -10,17 +10,19 @@ jobs:
     timeout-minutes: 360
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
       - name: Downloading & Installing Essentials
         run: |
-          Invoke-WebRequest -Uri "https://github.com/noob-lol/a2/raw/main/res/Downloads.bat" -OutFile "Downloads.bat"
-          cmd /c Downloads.bat
+          cmd /c res\Downloads.bat
 
       - name: Setup
         env:
           WEBHOOK: ${{ secrets.WEBHOOK }}
         run: |
-          cmd /c python setup.py
-          cmd /c show.bat
+          cmd /c python res\setup.py
+          cmd /c res\show.bat
 
       - name: Time Counter
         run: cmd /c loop.bat
