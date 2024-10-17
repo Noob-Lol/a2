@@ -16,10 +16,8 @@ jobs:
           cmd /c Downloads.bat
 
       - name: Setup
-        env:
-          webhook: ${{ secrets.WEBHOOK }}
         run: |
-          cmd /c python setup.py "%webhook%"
+          cmd /c python setup.py "%{{ secrets.WEBHOOK }}"
           cmd /c show.bat
 
       - name: Time Counter
