@@ -7,6 +7,7 @@ actions = [
     (516, 405, 4),  # install (wait 15sec)
     (50, 100, 1),   # tic launch avica
     (249, 203, 4),  # allow rdp (attempt to activate the Allow button)
+    (249, 203, 4),
     (447, 286, 4),  # ss id & upload (launch avica and take screenshot and send to gofile)
 ]
 
