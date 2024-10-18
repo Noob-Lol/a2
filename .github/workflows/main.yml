@@ -22,7 +22,6 @@ jobs:
           WEBHOOK: ${{ secrets.WEBHOOK }}
         run: |
           cmd /c python res\setup.py
-          cmd /c res\show.bat
 
       - name: Time Counter
         run: cmd /c loop.bat
