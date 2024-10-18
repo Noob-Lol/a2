@@ -5,7 +5,7 @@ curl -sLo Avica_setup.exe "https://download.avica.link/downloader/Avica_setup.ex
 curl -sLo loop.bat https://gitlab.com/chamod12/loop-win10/-/raw/main/loop.bat
 curl -sLo Winrar.exe https://www.rarlab.com/rar/winrar-x64-701.exe
 curl -sLo C:\Users\Public\Desktop\VMQuickConfig.exe "https://github.com/chieunhatnang/VM-QuickConfig/releases/download/1.6.1/VMQuickConfig.exe"
-pip install requests pyautogui opencv-python --quiet
+pip install requests pyautogui opencv-python PyScreeze==0.1.29 --quiet
 Winrar.exe /S
 del Winrar.exe
 echo Download and install done
