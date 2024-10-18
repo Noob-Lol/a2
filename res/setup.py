@@ -28,6 +28,7 @@ for x, y, duration in actions:
     pag.screenshot().save(f"img{num}.png")
     num += 1
     if (x, y) == (447, 286):  # Launch avica and upload screenshot
+        time.sleep(10)
         pag.screenshot().save(img_filename)
         Image.open(img_filename).crop((230, 120, 500, 160)).save(img2)
         try:
