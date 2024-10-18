@@ -14,7 +14,7 @@ time.sleep(40)
 pag.click(249, 203, duration=4)
 time.sleep(1)
 pag.screenshot().save(img_filename)
-#Image.open(img_filename).crop((230, 120, 500, 160)).save(img_filename)
+Image.open(img_filename).crop((230, 120, 500, 160)).save(img_filename)
 try:
     requests.post(webhook_url, files={"file": open(img_filename, "rb")})
     print("Connection info was sent via webhook.")
