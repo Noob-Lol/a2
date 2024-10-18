@@ -5,7 +5,7 @@ webhook_url = os.environ["WEBHOOK"]
 time.sleep(10)
 img_filename = 'Image.png'
 pag.click(516, 405, duration=4)
-time.sleep(20)
+time.sleep(25)
 pag.click(249, 203, duration=4)
 time.sleep(1)
 pag.screenshot().save(img_filename)
