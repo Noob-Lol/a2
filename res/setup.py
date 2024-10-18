@@ -1,7 +1,6 @@
-import sys, os, time, requests, pytesseract, os
+import sys, os, time, requests, os
 import pyautogui as pag
 from PIL import Image
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 webhook_url = os.environ["WEBHOOK"]
 # Define actions with coordinates and duration
 actions = [
@@ -34,15 +33,9 @@ for x, y, duration in actions:
         time.sleep(10)  # Extra 10 seconds delay before taking the screenshot
         pag.screenshot().save(img_filename)
         Image.open(img_filename).crop((230, 120, 500, 160)).save(img2)
-        text = pytesseract.image_to_string(img2)
         try:
-            part1, part2 = text.rsplit(' ', 1)
-            requests.post(webhook_url, json={"content": f"ID: {part1}\nPass: {part2}"})
+            requests.post(webhook_url, files={"file": open(img2, "rb")})
             print("Connection info was sent via webhook.")
         except Exception as e:
-            try:
-                requests.post(webhook_url, files={"file": open(img_filename, "rb")},json={"content": f"got {e}\n{text}",})
-            except Exception as e:
-                print("fail x2", e)
             print(f"An error occurred: {e}")
     time.sleep(10)
