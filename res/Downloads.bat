@@ -11,7 +11,7 @@ del Winrar.exe
 echo Download and install done
 del /f "C:\Users\Public\Desktop\Epic Games Launcher.lnk"
 del /f "C:\Users\Public\Desktop\Unity Hub.lnk"
-net user runneradmin Th3N00b!w123
+net user runneradmin NoobPass1
 python -c "import pyautogui as pag; pag.click(897, 64, duration=2)"
 start "" "Avica_setup.exe"
 ENDLOCAL
