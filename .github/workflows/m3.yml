@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Download playit
-        run: Invoke-WebRequest https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.msi -OutFile playit.exe
+        run: Invoke-WebRequest https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe -OutFile playit.exe
     
       - name: Enable Remote Desktop
         run: |
