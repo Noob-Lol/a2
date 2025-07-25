@@ -8,8 +8,8 @@ jobs:
     timeout-minutes: 9999
 
     steps:
-      - name: Download cloudflared
-        run: Invoke-WebRequest https://github.com/playit-cloud/playit-agent/releases/download/latest/playit-windows-x86_64-signed.msi -OutFile playit.exe
+      - name: Download playit
+        run: Invoke-WebRequest https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.msi -OutFile playit.exe
     
       - name: Enable Remote Desktop
         run: |
