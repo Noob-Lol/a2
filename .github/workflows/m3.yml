@@ -9,7 +9,7 @@ jobs:
 
     steps:
       - name: Download cloudflared
-        run: Invoke-WebRequest https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe -OutFile cloudflared.exe
+        run: Invoke-WebRequest https://github.com/playit-cloud/playit-agent/releases/download/latest/playit-windows-x86_64-signed.msi -OutFile playit.exe
     
       - name: Enable Remote Desktop
         run: |
@@ -20,5 +20,5 @@ jobs:
       - name: Set RDP Password
         run: Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "@cyb3rking" -Force)
     
-      - name: Start Cloudflared Tunnel (TCP)
-        run: .\cloudflared.exe tunnel --url tcp://localhost:3389
+      - name: Start playit
+        run: .\playit.exe
