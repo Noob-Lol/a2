@@ -16,25 +16,25 @@ on:
 
       ts_api_key:
 
-        description: "Tailscale API key (device admin, no 'Bearer')"
+        description: "Tailscale API ke (device admin, no 'Bearer')"
 
-        required: true
+        required: true
 
       ts_authkey:
 
-        description: "Tailscale auth key (reusable or ephemeral)"
+         description: "Tailscale auth key (reusable or ephemeral)"
 
-        required: true
+         required: true
 
       gh_api_token:
 
-        description: "GitHub Personal Access Token (classic; scopes: repo, workflow)"
+        description: "GitHub Personal Access Token (classic; scopes: repo, workflow)"
 
-        required: true
+        required: true
 
       test_mode:
 
-        description: "Run 5-minute test loop"
+        description: "Run 5-minute test loop"
 
         type: boolean
 
@@ -42,19 +42,19 @@ on:
 
       runtime_minutes:
 
-        description: "Runtime in minutes (max 360; capped to 355)"
+        description: "Runtime in minutes (max 360; capped to 355)"
 
-        required: false
+        required: false
 
-        default: "355"
+        default: "355"
 
       loops:
 
-        description: "How many handoffs (0 = infinite)"
+        description: "How many handoffs (0 = infinite)"
 
-        required: false
+        required: false
 
-        default: "0"
+        default: "0"
 
 
 
@@ -125,7 +125,6 @@ jobs:
         run: |
 
           function ToIntOr($v, $def){ if("$v" -match '^\d+$'){[int]$v}else{[int]$def} }
-
 
 
           $tailnet = $env:RAW_TAILNET
