@@ -75,16 +75,17 @@ jobs:
           RDP_USER: ${{ secrets.RDP_USER }}
           RDP_PASS: ${{ secrets.RDP_PASS }}
         run: |
-          $sec = ConvertTo-SecureString $env:RDP_PASS -AsPlainText -Force
-          if (-not (Get-LocalUser -Name $env:RDP_USER -ErrorAction SilentlyContinue)) {
-            New-LocalUser -Name $env:RDP_USER -Password $sec -AccountNeverExpires
-            Add-LocalGroupMember Administrators,$env:RDP_USER
-            Add-LocalGroupMember "Remote Desktop Users",$env:RDP_USER
+          $u="${{ env.RDP_USER }}"; $p="${{ env.RDP_PASS }}"
+          $sec = ConvertTo-SecureString $p -AsPlainText -Force
+          if (-not (Get-LocalUser -Name $u -ErrorAction SilentlyContinue)) {
+            New-LocalUser -Name $u -Password $sec -AccountNeverExpires
+            Add-LocalGroupMember -Group Administrators -Member $u
+            Add-LocalGroupMember -Group "Remote Desktop Users" -Member $u
           } else {
-            Set-LocalUser -Name $env:RDP_USER -Password $sec -AccountNeverExpires
-            Enable-LocalUser $env:RDP_USER
+            Set-LocalUser -Name $u -Password $sec -AccountNeverExpires
+            Enable-LocalUser -Name $u
           }
-          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" fDenyTSConnections 0
+          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop" | Out-Null
 
       - name: 🧹 Purge 'bullet' devices (startup)
