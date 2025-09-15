@@ -26,14 +26,14 @@ defaults:
   run:
     shell: pwsh
 
-env:
-  TS_HOSTNAME: bullet
-
 jobs:
   rdp:
     runs-on: windows-latest
     timeout-minutes: 370
     steps:
+      - name: 📥 Checkout repo (for startup.ps1)
+        uses: actions/checkout@v4
+
       - name: 🔧 Resolve inputs
         id: cfg
         env:
@@ -55,59 +55,19 @@ jobs:
           "loops=$loops"     | Out-File -Append $env:GITHUB_OUTPUT
           "isTest=$isTest"   | Out-File -Append $env:GITHUB_OUTPUT
 
-      - name: ⚙️ Install Tailscale (if missing) & show version
-        run: |
-          $exe = "C:\Program Files\Tailscale\tailscale.exe"
-          if (-not (Test-Path $exe)) {
-            $dst = "$env:TEMP\tailscale-setup.exe"
-            Invoke-WebRequest 'https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe' -OutFile $dst
-            Start-Process $dst "/quiet" -Wait
-          }
-          Start-Service Tailscale -ErrorAction SilentlyContinue
-          & $exe version
-
-      - name: 🔐 Enable RDP user + firewall
+      - name: 🚀 Run startup script
         env:
           RDP_USER: ${{ secrets.RDP_USER }}
           RDP_PASS: ${{ secrets.RDP_PASS }}
+          TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
+          TS_HOSTNAME: ${{ secrets.TS_HOSTNAME }}
         run: |
-          $u="${{ env.RDP_USER }}"; $p="${{ env.RDP_PASS }}"
-          $sec = ConvertTo-SecureString $p -AsPlainText -Force
-          if (-not (Get-LocalUser -Name $u -ErrorAction SilentlyContinue)) {
-            New-LocalUser -Name $u -Password $sec -AccountNeverExpires
-            Add-LocalGroupMember -Group Administrators -Member $u
-            Add-LocalGroupMember -Group "Remote Desktop Users" -Member $u
-          } else {
-            Set-LocalUser -Name $u -Password $sec -AccountNeverExpires
-            Enable-LocalUser -Name $u
-          }
-          Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop" | Out-Null
-
-      - name: 🔗 Tailscale up (hostname=bullet)
-        id: up
-        run: |
-          $ts = "C:\Program Files\Tailscale\tailscale.exe"
-          & $ts logout | Out-Null
-          & $ts up --authkey "${{ secrets.TS_AUTHKEY }}" --hostname "${{ env.TS_HOSTNAME }}" --accept-routes --accept-dns=false
-          Start-Sleep 2
-
-          $ip4 = (& $ts ip -4 | Select-Object -First 1)
-          $status = & $ts status --json | ConvertFrom-Json
-          "ip4=$ip4"   | Out-File -Append $env:GITHUB_OUTPUT
-          "fqdn=$($status.Self.DNSName)" | Out-File -Append $env:GITHUB_OUTPUT
-          "derp=$($status.Self.DERP)"    | Out-File -Append $env:GITHUB_OUTPUT
-
-          "### RDP (A)`nHost: $env:TS_HOSTNAME`nIPv4: $ip4`nMagicDNS: $($status.Self.DNSName)`nDERP: $($status.Self.DERP)`nUser: ${{ secrets.RDP_USER }}`nPass: ${{ secrets.RDP_PASS }}" | Out-File $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
-
-      - name: ⏳ Keep alive
-        run: |
-          $end=(Get-Date).AddMinutes([int]"${{ steps.cfg.outputs.runtime }}")
-          while((Get-Date) -lt $end){
-            $left=[int]([math]::Ceiling(($end-(Get-Date)).TotalMinutes))
-            Write-Host "RDP alive... ($left min left)"
-            Start-Sleep 60
-          }
+          .github\scripts\startup.ps1 `
+            -User $env:RDP_USER `
+            -Pass $env:RDP_PASS `
+            -TsAuthKey $env:TS_AUTHKEY `
+            -Hostname $env:TS_HOSTNAME `
+            -RuntimeMinutes ${{ steps.cfg.outputs.runtime }}
 
       - name: 🔁 Dispatch workflow B
         if: always()
@@ -115,7 +75,7 @@ jobs:
           $loops=[int]"${{ steps.cfg.outputs.loops }}"
           if ($loops -eq 1) { Write-Host "Loops finished"; exit 0 }
           $next=($(if($loops -gt 1){$loops-1}else{0}))
-      
+
           $body=@{
             ref    = "${{ github.ref_name }}"
             inputs = @{
@@ -124,7 +84,7 @@ jobs:
               loops           = "$next"
             }
           } | ConvertTo-Json -Depth 5
-      
+
           Invoke-RestMethod -Method POST `
             -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ts-win-b.yml/dispatches" `
             -Headers @{ Authorization = "Bearer ${{ github.token }}"; "Accept"="application/vnd.github+json" } `
