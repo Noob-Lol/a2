@@ -145,8 +145,7 @@ jobs:
           $loops=[int]"${{ steps.cfg.outputs.loops }}"
           if ($loops -eq 1) { Write-Host "Loops finished"; exit 0 }
           $next=($(if($loops -gt 1){$loops-1}else{0}))
-
-          $token="${{ secrets.GH_API_TOKEN }}"
+      
           $body=@{
             ref    = "${{ github.ref_name }}"
             inputs = @{
@@ -155,8 +154,8 @@ jobs:
               loops           = "$next"
             }
           } | ConvertTo-Json -Depth 5
-
+      
           Invoke-RestMethod POST `
             -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ts-win-a.yml/dispatches" `
-            -Headers @{ Authorization = "Bearer $token"; "Accept"="application/vnd.github+json" } `
+            -Headers @{ Authorization = "Bearer ${{ github.token }}"; "Accept"="application/vnd.github+json" } `
             -Body $body
