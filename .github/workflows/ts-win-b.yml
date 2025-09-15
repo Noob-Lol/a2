@@ -92,10 +92,10 @@ jobs:
         run: |
           $hdr = @{ Authorization = "Bearer ${{ secrets.TS_API_KEY }}" }
           try {
-            $resp = Invoke-RestMethod GET -Headers $hdr -Uri "https://api.tailscale.com/api/v2/tailnet/-/devices"
+            $resp = Invoke-RestMethod -Method GET -Headers $hdr -Uri "https://api.tailscale.com/api/v2/tailnet/-/devices"
             foreach ($d in $resp.devices) {
               if ($d.name -match 'bullet' -or $d.hostname -match 'bullet' -or $d.DNSName -match 'bullet') {
-                Invoke-RestMethod DELETE -Headers $hdr -Uri "https://api.tailscale.com/api/v2/device/$($d.id)" | Out-Null
+                Invoke-RestMethod -Method DELETE -Headers $hdr -Uri "https://api.tailscale.com/api/v2/device/$($d.id)" | Out-Null
                 Write-Host "Deleted at start: $($d.name)"
               }
             }
@@ -131,10 +131,10 @@ jobs:
         run: |
           $hdr = @{ Authorization = "Bearer ${{ secrets.TS_API_KEY }}" }
           try {
-            $resp = Invoke-RestMethod GET -Headers $hdr -Uri "https://api.tailscale.com/api/v2/tailnet/-/devices"
+            $resp = Invoke-RestMethod -Method GET -Headers $hdr -Uri "https://api.tailscale.com/api/v2/tailnet/-/devices"
             foreach ($d in $resp.devices) {
               if ($d.name -match 'bullet' -or $d.hostname -match 'bullet' -or $d.DNSName -match 'bullet') {
-                Invoke-RestMethod DELETE -Headers $hdr -Uri "https://api.tailscale.com/api/v2/device/$($d.id)" | Out-Null
+                Invoke-RestMethod -Method DELETE -Headers $hdr -Uri "https://api.tailscale.com/api/v2/device/$($d.id)" | Out-Null
                 Write-Host "Deleted at exit: $($d.name)"
               }
             }
@@ -156,7 +156,7 @@ jobs:
             }
           } | ConvertTo-Json -Depth 5
       
-          Invoke-RestMethod POST `
+          Invoke-RestMethod -Method POST `
             -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ts-win-a.yml/dispatches" `
             -Headers @{ Authorization = "Bearer ${{ github.token }}"; "Accept"="application/vnd.github+json" } `
             -Body $body
