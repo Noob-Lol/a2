@@ -19,11 +19,13 @@ function Enable-RdpUser {
     }
     Set-ItemProperty "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name fDenyTSConnections -Value 0
     Enable-NetFirewallRule -DisplayGroup "Remote Desktop" | Out-Null
+    Write-Host "=== RDP user enabled ==="
 }
 
 function Enable-Audio {
     Start-Service -Name "Audiosrv" -ErrorAction SilentlyContinue
     Start-Service -Name "AudioEndpointBuilder" -ErrorAction SilentlyContinue
+    Write-Host "=== Audio enabled ==="
 }
 
 function Start-Tailscale {
@@ -36,11 +38,12 @@ function Start-Tailscale {
     }
     Start-Service -Name Tailscale -ErrorAction SilentlyContinue
     & $ts logout | Out-Null
-    & $ts up --authkey $AuthKey --hostname $Hostname --accept-routes --accept-dns=false
+    & $ts up --authkey $AuthKey --hostname $Hostname --accept-routes --accept-dns=false --state=mem:
+    Write-Host "=== Tailscale started ==="
     Start-Sleep -Seconds 2
 }
 
-function Keep-Alive {
+function KeepAlive {
     param([int]$Minutes)
     $end=(Get-Date).AddMinutes($Minutes)
     while((Get-Date) -lt $end){
@@ -54,4 +57,4 @@ Write-Host "=== Startup script running ==="
 Enable-RdpUser -User $User -Pass $Pass
 Enable-Audio
 Start-Tailscale -AuthKey $TsAuthKey -Hostname $Hostname
-Keep-Alive -Minutes $RuntimeMinutes
+KeepAlive -Minutes $RuntimeMinutes
