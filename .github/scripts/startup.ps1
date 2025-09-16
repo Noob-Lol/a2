@@ -38,7 +38,7 @@ function Start-Tailscale {
     }
     Start-Service -Name Tailscale -ErrorAction SilentlyContinue
     & $ts logout | Out-Null
-    & $ts up --authkey $AuthKey --hostname $Hostname --accept-routes --accept-dns=false --state=mem:
+    & $ts up --authkey $AuthKey --hostname $Hostname --accept-routes --accept-dns=false
     Write-Host "=== Tailscale started ==="
     Start-Sleep -Seconds 2
 }
