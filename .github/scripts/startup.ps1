@@ -43,7 +43,7 @@ function Start-Tailscale {
     Start-Sleep -Seconds 2
 }
 
-function KeepAlive {
+function Wait-Runtime {
     param([int]$Minutes)
     $end=(Get-Date).AddMinutes($Minutes)
     while((Get-Date) -lt $end){
@@ -57,4 +57,11 @@ Write-Host "=== Startup script running ==="
 Enable-RdpUser -User $User -Pass $Pass
 Enable-Audio
 Start-Tailscale -AuthKey $TsAuthKey -Hostname $Hostname
-KeepAlive -Minutes $RuntimeMinutes
+# any custom commands can be added here
+
+try {
+    Wait-Runtime -Minutes $RuntimeMinutes
+} finally {
+    Write-Host "=== Cleaning up Tailscale ==="
+    & "C:\Program Files\Tailscale\tailscale.exe" logout
+}
