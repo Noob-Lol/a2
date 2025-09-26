@@ -75,7 +75,7 @@ jobs:
       - name: 📌 Pin folder on Desktop
         run: |
           if (-not (Test-Path C:\persistent-folder)) { New-Item -ItemType Directory C:\persistent-folder | Out-Null }
-          $desktop = [Environment]::GetFolderPath('Desktop')
+          $desktop = "C:\Users\Public\Desktop"
           cmd /c mklink /D "$desktop\Persistent Folder" "C:\persistent-folder" || echo "Link exists"
           echo "Updated at $(Get-Date)" >> C:\persistent-folder\log.txt
 
