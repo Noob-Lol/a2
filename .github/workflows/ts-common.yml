@@ -66,9 +66,7 @@ jobs:
           "isTest=$isTest"   | Out-File -Append $env:GITHUB_OUTPUT
 
       - name : Delete Previous Cache (if found)
-        run: |
-          gh cache delete shared-folder --confirm || echo "No previous cache to delete"
-          echo "Updated at $(Get-Date)" >> C:\persistent-folder\log.txt
+        run: gh cache delete shared-folder --confirm || echo "No previous cache to delete"
         env:
           GH_TOKEN: ${{ github.token }}
 
@@ -77,6 +75,7 @@ jobs:
           if (-not (Test-Path C:\persistent-folder)) { New-Item -ItemType Directory C:\persistent-folder | Out-Null }
           $desktop = [Environment]::GetFolderPath('Desktop')
           cmd /c mklink /D "$desktop\Persistent Folder" "C:\persistent-folder" || echo "Link exists"
+          echo "Updated at $(Get-Date)" >> C:\persistent-folder\log.txt
 
       - name: 🚀 Run startup script
         env:
