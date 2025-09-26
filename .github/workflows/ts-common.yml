@@ -1,0 +1,124 @@
+name: ts common
+
+on:
+  workflow_call:
+    inputs:
+      test_mode:
+        type: boolean
+        default: false
+      runtime_minutes:
+        type: string
+        default: "355"
+      loops:
+        type: string
+        default: "0"
+      caller: # lets us know if it was A or B
+        type: string
+        required: true
+    secrets:
+      RDP_USER: { required: true }
+      RDP_PASS: { required: true }
+      TS_AUTHKEY: { required: true }
+      TS_HOSTNAME: { required: true }
+
+permissions:
+  contents: read
+  actions: write
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  rdp:
+    runs-on: windows-latest
+    timeout-minutes: 370
+    steps:
+      - uses: actions/checkout@v4
+
+      # Restore cache
+      - name: 📂 Restore shared folder
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: C:\persistent-folder
+          key: shared-folder
+
+      - name: 🔧 Resolve inputs
+        id: cfg
+        env:
+          RAW_TEST:     ${{ inputs.test_mode }}
+          RAW_RUNTIME:  ${{ inputs.runtime_minutes }}
+          RAW_LOOPS:    ${{ inputs.loops }}
+        run: |
+          function ToIntOr($v,$def){if("$v"-match'^\d+$'){[int]$v}else{[int]$def}}
+
+          $isTest  = ($env:RAW_TEST -match '^(?i:true|1|yes|on)$')
+          $runtime = ToIntOr $env:RAW_RUNTIME 355
+          if ($isTest) { $runtime = 5 }
+          elseif ($runtime -lt 6 -or $runtime -gt 360) { $runtime = 355 }
+
+          $loops = ToIntOr $env:RAW_LOOPS 0
+          if ($loops -lt 0) { $loops = 0 }
+
+          "runtime=$runtime" | Out-File -Append $env:GITHUB_OUTPUT
+          "loops=$loops"     | Out-File -Append $env:GITHUB_OUTPUT
+          "isTest=$isTest"   | Out-File -Append $env:GITHUB_OUTPUT
+
+      - name : Delete Previous Cache (if found)
+        run: |
+          gh cache delete shared-folder --confirm || echo "No previous cache to delete"
+          echo "Updated at $(Get-Date)" >> C:\persistent-folder\log.txt
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: 📌 Pin folder on Desktop
+        run: |
+          if (-not (Test-Path C:\persistent-folder)) { New-Item -ItemType Directory C:\persistent-folder | Out-Null }
+          $desktop = [Environment]::GetFolderPath('Desktop')
+          cmd /c mklink /D "$desktop\Persistent Folder" "C:\persistent-folder" || echo "Link exists"
+
+      - name: 🚀 Run startup script
+        env:
+          RDP_USER: ${{ secrets.RDP_USER }}
+          RDP_PASS: ${{ secrets.RDP_PASS }}
+          TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
+          TS_HOSTNAME: ${{ secrets.TS_HOSTNAME }}
+        run: |
+          .github\scripts\startup.ps1 `
+            -User $env:RDP_USER `
+            -Pass $env:RDP_PASS `
+            -TsAuthKey $env:TS_AUTHKEY `
+            -Hostname $env:TS_HOSTNAME `
+            -RuntimeMinutes ${{ steps.cfg.outputs.runtime }}
+
+      # Save cache (always, even if job fails)
+      - name: 💾 Save updated folder
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: C:\persistent-folder
+          key: shared-folder
+
+      - name: 🔁 Dispatch opposite workflow
+        if: always()
+        run: |
+          $loops=[int]"${{ steps.cfg.outputs.loops }}"
+          if ($loops -eq 1) { Write-Host "Loops finished"; exit 0 }
+          $next=($(if($loops -gt 1){$loops-1}else{0}))
+
+          $opposite = if ("${{ inputs.caller }}" -eq "A") { "ts-win-b.yml" } else { "ts-win-a.yml" }
+
+          $body=@{
+            ref    = "${{ github.ref_name }}"
+            inputs = @{
+              test_mode       = "false"
+              runtime_minutes = "${{ steps.cfg.outputs.runtime }}"
+              loops           = "$next"
+            }
+          } | ConvertTo-Json -Depth 5
+
+          Invoke-RestMethod -Method POST `
+            -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/$opposite/dispatches" `
+            -Headers @{ Authorization = "Bearer ${{ github.token }}"; "Accept"="application/vnd.github+json" } `
+            -Body $body

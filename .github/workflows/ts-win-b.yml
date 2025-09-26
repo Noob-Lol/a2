@@ -3,16 +3,9 @@ name: ts win (B)
 on:
   workflow_dispatch:
     inputs:
-      test_mode:
-        description: "Run 5-minute test loop"
-        type: boolean
-        default: false
-      runtime_minutes:
-        description: "Runtime in minutes (max 360; capped to 355)"
-        default: "355"
-      loops:
-        description: "How many handoffs (0 = infinite)"
-        default: "0"
+      test_mode: { description: "Run 5-minute test loop", type: boolean, default: false }
+      runtime_minutes: { description: "Runtime in minutes (max 360; capped to 355)", default: "355" }
+      loops: { description: "How many handoffs (0 = infinite)", default: "0" }
 
   workflow_run:
     workflows: ["ts win (A)"]
@@ -22,74 +15,16 @@ concurrency:
   group: tailscale-rdp-singleton
   cancel-in-progress: false
 
-permissions:
-  contents: read
-  actions: write
-
-defaults:
-  run:
-    shell: pwsh
-
 jobs:
-  rdp:
-    runs-on: windows-latest
-    timeout-minutes: 370
-    steps:
-      - name: 📥 Checkout repo (for startup.ps1)
-        uses: actions/checkout@v4
-
-      - name: 🔧 Resolve inputs
-        id: cfg
-        env:
-          RAW_TEST:     ${{ inputs.test_mode }}
-          RAW_RUNTIME:  ${{ inputs.runtime_minutes }}
-          RAW_LOOPS:    ${{ inputs.loops }}
-        run: |
-          function ToIntOr($v,$def){if("$v"-match'^\d+$'){[int]$v}else{[int]$def}}
-
-          $isTest  = ($env:RAW_TEST -match '^(?i:true|1|yes|on)$')
-          $runtime = ToIntOr $env:RAW_RUNTIME 355
-          if ($isTest) { $runtime = 5 }
-          elseif ($runtime -lt 6 -or $runtime -gt 360) { $runtime = 355 }
-
-          $loops = ToIntOr $env:RAW_LOOPS 0
-          if ($loops -lt 0) { $loops = 0 }
-
-          "runtime=$runtime" | Out-File -Append $env:GITHUB_OUTPUT
-          "loops=$loops"     | Out-File -Append $env:GITHUB_OUTPUT
-          "isTest=$isTest"   | Out-File -Append $env:GITHUB_OUTPUT
-
-      - name: 🚀 Run startup script
-        env:
-          RDP_USER: ${{ secrets.RDP_USER }}
-          RDP_PASS: ${{ secrets.RDP_PASS }}
-          TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
-          TS_HOSTNAME: ${{ secrets.TS_HOSTNAME }}
-        run: |
-          .github\scripts\startup.ps1 `
-            -User $env:RDP_USER `
-            -Pass $env:RDP_PASS `
-            -TsAuthKey $env:TS_AUTHKEY `
-            -Hostname $env:TS_HOSTNAME `
-            -RuntimeMinutes ${{ steps.cfg.outputs.runtime }}
-
-      - name: 🔁 Dispatch workflow A
-        if: always()
-        run: |
-          $loops=[int]"${{ steps.cfg.outputs.loops }}"
-          if ($loops -eq 1) { Write-Host "Loops finished"; exit 0 }
-          $next=($(if($loops -gt 1){$loops-1}else{0}))
-
-          $body=@{
-            ref    = "${{ github.ref_name }}"
-            inputs = @{
-              test_mode       = "false"
-              runtime_minutes = "${{ steps.cfg.outputs.runtime }}"
-              loops           = "$next"
-            }
-          } | ConvertTo-Json -Depth 5
-
-          Invoke-RestMethod -Method POST `
-            -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/ts-win-a.yml/dispatches" `
-            -Headers @{ Authorization = "Bearer ${{ github.token }}"; "Accept"="application/vnd.github+json" } `
-            -Body $body
+  call-common:
+    uses: ./.github/workflows/ts-common.yml
+    with:
+      test_mode: ${{ inputs.test_mode }}
+      runtime_minutes: ${{ inputs.runtime_minutes }}
+      loops: ${{ inputs.loops }}
+      caller: "B"
+    secrets:
+      RDP_USER: ${{ secrets.RDP_USER }}
+      RDP_PASS: ${{ secrets.RDP_PASS }}
+      TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
+      TS_HOSTNAME: ${{ secrets.TS_HOSTNAME }}
