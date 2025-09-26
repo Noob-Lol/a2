@@ -66,6 +66,8 @@ jobs:
           "isTest=$isTest"   | Out-File -Append $env:GITHUB_OUTPUT
 
       - name : Delete Previous Cache (if found)
+        if: steps.cache-restore.outputs.cache-hit == 'true'
+        continue-on-error: true
         run: gh cache delete shared-folder || echo "No previous cache to delete"
         env:
           GH_TOKEN: ${{ github.token }}
